@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("APSocket")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("APSocket.Net Is A Good Tool For Socket Progarming. With APSocket.Net You Can Listen, Recive, Send, Manage Clients Very Easy.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Alireza Paridar")]
 [assembly: AssemblyProduct("APSocket")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]

@@ -78,7 +78,7 @@ namespace APSocket.Net
             {
                 if (myNetworkStream.CanRead)
                 {
-                    byte[] myReadBuffer = new byte[1024];
+                    byte[] myReadBuffer = new byte[1024*10];
                     StringBuilder myCompleteMessage = new StringBuilder();
                     int numberOfBytesRead = 0;
 
@@ -86,17 +86,18 @@ namespace APSocket.Net
                     {
                         numberOfBytesRead = myNetworkStream.Read(myReadBuffer, 0, myReadBuffer.Length);
                         byte[] temp = new byte[numberOfBytesRead];
-                        Array.Copy(myReadBuffer, temp, numberOfBytesRead);
+                        //Array.Copy(myReadBuffer, temp, numberOfBytesRead);
 
-                        buf.AddRange(temp);
+                        //buf.AddRange(temp);
 
-                        //for (int i = 0; i < numberOfBytesRead; i++)
-                        //{
-                        //    buf.Add(myReadBuffer[i]);
-                        //}
+                        for (int i = 0; i < numberOfBytesRead; i++)
+                        {
+                            buf.Add(myReadBuffer[i]);
+                        }
                     }
                     while (myNetworkStream.DataAvailable);
 
+                    myNetworkStream.Close();
                     return buf.ToArray();
 
                 }

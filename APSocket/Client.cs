@@ -28,6 +28,11 @@ namespace APSocket.Net
         public string EndOfMessage = "<EOF>";
         public string BreakMessage = "<FOF>";
 
+        private IPAddress _serverIP;
+        private int _serverPort;
+        private bool _socketStatus;
+        public bool SocketStatus { get { return _socketStatus; } }
+
         /// <summary>
         /// Connect To The Specified Server (Async)
         /// </summary>
@@ -49,6 +54,8 @@ namespace APSocket.Net
         /// <param name="port">Destination Port</param>
         public void Connect(IPAddress ip, int port)
         {
+            _serverIP = ip;
+            _serverPort = port;
             EndPoint ep = new IPEndPoint(ip, port);
             clientsocket = new Socket(ep.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             clientsocket.Connect(ep);
@@ -61,6 +68,8 @@ namespace APSocket.Net
         /// <param name="port">Destination Port</param>
         public void Connect(string ip, int port)
         {
+            _serverIP = IPAddress.Parse(ip);
+            _serverPort = port;
             Connect(IPAddress.Parse(ip), port);
         }
 
@@ -174,6 +183,12 @@ namespace APSocket.Net
         /// <param name="data"></param>
         public void SendAsync(String data)
         {
+            RefreshConnectionState();
+            if (!_socketStatus)
+            {
+                Connect(_serverIP, _serverPort);
+            }
+
             byte[] byteData = Encoding.Unicode.GetBytes(data + EndOfMessage);
 
             clientsocket.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), clientsocket);
@@ -187,6 +202,12 @@ namespace APSocket.Net
         /// <param name="data"></param>
         public void SendAsync(byte[] data)
         {
+            RefreshConnectionState();
+            if (!_socketStatus)
+            {
+                Connect(_serverIP, _serverPort);
+            }
+
             clientsocket.BeginSend(data, 0, data.Length, 0, new AsyncCallback(SendCallback), clientsocket);
 
             sendDone.WaitOne();
@@ -198,6 +219,12 @@ namespace APSocket.Net
         /// <param name="byteData"></param>
         public void Send(byte[] byteData)
         {
+            RefreshConnectionState();
+            if (!_socketStatus)
+            {
+                Connect(_serverIP, _serverPort);
+            }
+
             clientsocket.Send(byteData, 0, byteData.Length, SocketFlags.None);
         }
 
@@ -207,6 +234,12 @@ namespace APSocket.Net
         /// <param name="byteData"></param>
         public void Send(string byteData)
         {
+            RefreshConnectionState();
+            if (!_socketStatus)
+            {
+                Connect(_serverIP, _serverPort);
+            }
+
             byte[] buf = Encoding.Unicode.GetBytes(byteData + EndOfMessage);
             Send(buf);
         }
@@ -226,6 +259,34 @@ namespace APSocket.Net
 
             }
         }
+
+        public void RefreshConnectionState()
+        {
+            if (!clientsocket.Connected)
+            {
+                if (clientsocket != null)
+                    _socketStatus = false;
+                return;
+            }
+
+            try
+            {
+                bool part1 = clientsocket.Poll(1000, SelectMode.SelectRead);
+                bool part2 = (clientsocket.Available == 0);
+                if ((part1 && part2) || !clientsocket.Connected)
+                {
+                    _socketStatus = false;
+                }
+                else
+                    _socketStatus = true;
+
+            }
+            catch (SocketException)
+            {
+                _socketStatus = false;
+            }
+        }
+
 
         public void Close()
         {
