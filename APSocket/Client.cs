@@ -181,7 +181,7 @@ namespace APSocket.Net
         /// Send Message To The Server (Async)
         /// </summary>
         /// <param name="data"></param>
-        public void SendAsync(String data)
+        public void SendAsync(String data, bool firstLengh = false)
         {
             RefreshConnectionState();
             if (!_socketStatus)
@@ -190,6 +190,12 @@ namespace APSocket.Net
             }
 
             byte[] byteData = Encoding.Unicode.GetBytes(data + EndOfMessage);
+
+            if (firstLengh)
+            {
+                byte[] len = BitConverter.GetBytes((int.Parse(byteData.Length.ToString().PadLeft(4, '0').ToString())));
+                clientsocket.BeginSend(len, 0, len.Length, 0, new AsyncCallback(SendCallback), clientsocket);
+            }
 
             clientsocket.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), clientsocket);
 
@@ -200,12 +206,20 @@ namespace APSocket.Net
         /// Send Data To The Server (Async)
         /// </summary>
         /// <param name="data"></param>
-        public void SendAsync(byte[] data)
+        public void SendAsync(byte[] data,bool firstLengh=false)
         {
             RefreshConnectionState();
             if (!_socketStatus)
             {
                 Connect(_serverIP, _serverPort);
+            }
+            RefreshConnectionState();
+
+            if (firstLengh)
+            {
+                byte[] len= BitConverter.GetBytes((int.Parse(data.Length.ToString().PadLeft(4, '0').ToString())));
+                clientsocket.BeginSend(len, 0, len.Length, 0, new AsyncCallback(SendCallback), clientsocket);
+                sendDone.WaitOne();
             }
 
             clientsocket.BeginSend(data, 0, data.Length, 0, new AsyncCallback(SendCallback), clientsocket);
@@ -217,12 +231,19 @@ namespace APSocket.Net
         /// Send Data To The Server 
         /// </summary>
         /// <param name="byteData"></param>
-        public void Send(byte[] byteData)
+        public void Send(byte[] byteData, bool firstLengh = false)
         {
             RefreshConnectionState();
             if (!_socketStatus)
             {
                 Connect(_serverIP, _serverPort);
+            }
+            RefreshConnectionState();
+
+            if (firstLengh)
+            {
+                byte[] len = BitConverter.GetBytes((int.Parse(byteData.Length.ToString().PadLeft(4, '0').ToString())));
+                clientsocket.Send(len, 0, len.Length,SocketFlags.None);
             }
 
             clientsocket.Send(byteData, 0, byteData.Length, SocketFlags.None);
@@ -232,7 +253,7 @@ namespace APSocket.Net
         /// Send Message To The Server 
         /// </summary>
         /// <param name="byteData"></param>
-        public void Send(string byteData)
+        public void Send(string byteData, bool firstLengh = false)
         {
             RefreshConnectionState();
             if (!_socketStatus)
@@ -240,7 +261,15 @@ namespace APSocket.Net
                 Connect(_serverIP, _serverPort);
             }
 
+
             byte[] buf = Encoding.Unicode.GetBytes(byteData + EndOfMessage);
+
+            if (firstLengh)
+            {
+                byte[] len = BitConverter.GetBytes((int.Parse(buf.Length.ToString().PadLeft(4, '0').ToString())));
+                clientsocket.BeginSend(len, 0, len.Length, 0, new AsyncCallback(SendCallback), clientsocket);
+            }
+
             Send(buf);
         }
 

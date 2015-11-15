@@ -24,6 +24,17 @@ namespace APSocket.Net
 
         }
 
+        public class DataStructLenghFirst
+        {
+            public Socket socket { get; set; }
+
+            public const int BufferSize = 1024;
+            public int? FileSize;
+            public int? Index;
+            public byte[] buffer = new byte[BufferSize];
+            public byte[] RawData;
+        }
+
         public class AcceptedClient
         {
             public int id { get; set; }
@@ -76,32 +87,38 @@ namespace APSocket.Net
 
             public byte[] ReadByte()
             {
-                if (myNetworkStream.CanRead)
-                {
-                    byte[] myReadBuffer = new byte[1024*10];
-                    StringBuilder myCompleteMessage = new StringBuilder();
-                    int numberOfBytesRead = 0;
-
-                    do
+                try {
+                    if (myNetworkStream.CanRead)
                     {
-                        numberOfBytesRead = myNetworkStream.Read(myReadBuffer, 0, myReadBuffer.Length);
-                        byte[] temp = new byte[numberOfBytesRead];
-                        //Array.Copy(myReadBuffer, temp, numberOfBytesRead);
+                        byte[] myReadBuffer = new byte[1024 * 10];
+                        StringBuilder myCompleteMessage = new StringBuilder();
+                        int numberOfBytesRead = 0;
 
-                        //buf.AddRange(temp);
-
-                        for (int i = 0; i < numberOfBytesRead; i++)
+                        do
                         {
-                            buf.Add(myReadBuffer[i]);
+                            numberOfBytesRead = myNetworkStream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                            byte[] temp = new byte[numberOfBytesRead];
+                            //Array.Copy(myReadBuffer, temp, numberOfBytesRead);
+
+                            //buf.AddRange(temp);
+
+                            for (int i = 0; i < numberOfBytesRead; i++)
+                            {
+                                buf.Add(myReadBuffer[i]);
+                            }
                         }
+                        while (myNetworkStream.DataAvailable);
+
+                        myNetworkStream.Close();
+                        return buf.ToArray();
+
                     }
-                    while (myNetworkStream.DataAvailable);
-
-                    myNetworkStream.Close();
-                    return buf.ToArray();
-
+                    else
+                    {
+                        return null;
+                    }
                 }
-                else
+                catch
                 {
                     return null;
                 }

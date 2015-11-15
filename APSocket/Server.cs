@@ -26,7 +26,7 @@ namespace APSocket.Net
 
         public int BackLog { get; set; }
 
-        public enum CommunicationMode { Messaging, StreamFile }
+        public enum CommunicationMode { Messaging, StreamFile, LengthFirst }
 
         public event RecivedData ReciveIntterupt;
         public event RecivedDataByte ReciveByteIntterupt;
@@ -153,6 +153,19 @@ namespace APSocket.Net
 
                     Handel.Close();
                     break;
+
+                case CommunicationMode.LengthFirst:
+                    APSocket.DataStructLenghFirst stateLenFirst = new APSocket.DataStructLenghFirst();
+                    stateLenFirst.socket = Handel;
+
+                    Handel.BeginReceive(
+                     stateLenFirst.buffer
+                      , 0
+                      , APSocket.DataStructLenghFirst.BufferSize
+                      , 0
+                      ,
+                      new AsyncCallback(ReadFirstLenCallback), stateLenFirst);
+                    break;
             }
 
         }
@@ -211,13 +224,65 @@ namespace APSocket.Net
 
         }
 
+        private void ReadFirstLenCallback(IAsyncResult ar)
+        {
+            try
+            {
+                String content = String.Empty;
+
+                APSocket.DataStructLenghFirst state = (APSocket.DataStructLenghFirst)ar.AsyncState;
+                Socket handler = state.socket;
+
+                int bytesRead = handler.EndReceive(ar);
+
+                if (bytesRead > 0)
+                {
+
+                    if (!state.FileSize.HasValue)
+                    {
+                        byte[] temp = new byte[bytesRead];
+                        Array.Copy(state.buffer, temp, bytesRead);
+                        int size = BitConverter.ToInt32(temp, 0);
+                        state.FileSize = size;
+                        state.RawData = new byte[size];
+                        state.Index = 0;
+                    }
+                    else
+                    {
+                        Array.Copy(state.buffer, 0, state.RawData, state.Index.Value, bytesRead);
+                        state.Index += bytesRead;
+                        if (state.Index == state.FileSize)
+                        {
+                            if (ReciveByteIntterupt != null)
+                                ReciveByteIntterupt(handler, state.RawData);
+                            handler.Close();
+                            return;
+                        }
+
+                    }
+
+
+                    handler.BeginReceive(state.buffer, 0, APSocket.DataStruct.BufferSize, 0,
+                    new AsyncCallback(ReadFirstLenCallback), state);
+
+                }
+
+            }
+            catch (SocketException e)
+            {
+
+                RefreshConnectionState();
+
+            }
+
+        }
 
         //..............................................................................
 
-            /// <summary>
-            /// Get Count Of Connected Clients
-            /// </summary>
-            /// <returns></returns>
+        /// <summary>
+        /// Get Count Of Connected Clients
+        /// </summary>
+        /// <returns></returns>
         public int countOfAcceptedConnection()
         {
             return ConnectedClients.Count;
