@@ -8,7 +8,7 @@ CommunicationMode:</br>
 1- Messaging: this mode is for messageing Communication. End of each message should be <EOF> OR <FOF>.</br>
 (In client class Send(string message) method added <EOF> automatically).</br></br>
 2- StreamFile: This mode is for Reciving a file streamly.</br></br>
-3- LengthFirst:This mode first Recive file size then Reciving file.</br></br>
+3- LengthFirst:This mode first Recive file size then Reciving file.</br>
 (In client class Send(byte[] data,bool firstLenght) do that automatically if firstlenght value be true)
 
 
