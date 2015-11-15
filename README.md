@@ -84,3 +84,6 @@ Client Side Example:</br>
         // You Can Send Data To The Server With Send Method:
           client.Send("Hello");
           client.Send(byte[]);
+          
+          // Send Data To The Server In LenghtFirst Mode :
+          client.SendAsync(data,true);
