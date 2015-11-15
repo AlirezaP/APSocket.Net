@@ -4,6 +4,16 @@ With APSocket.Net You Can Listen,Recive,Send,Manage Clients Very Easy.
 
 </br>
 
+CommunicationMode:</br>
+1- Messaging: this mode is for messageing Communication. End of each message should be <EOF> OR <FOF>.</br>
+(In client class Send(string message) method added <EOF> automatically).</br></br>
+2- StreamFile: This mode is for Reciving a file streamly.</br></br>
+3- LengthFirst:This mode first Recive file size then Reciving file.</br></br>
+(In client class Send(byte[] data,bool firstLenght) do that automatically if firstlenght value be true)
+
+
+</br>
+
 
 Server Side Example:</br>
 
@@ -14,7 +24,19 @@ Server Side Example:</br>
                   server.DisConnectConnection += Server_DisConnectConnection;
                   server.ReciveByteIntterupt += Server_ReciveByteIntterupt;
                   server.ReciveIntterupt += Server_ReciveIntterupt;
+                  
+                  //Messaging Mode
                   server.StartListeninig(APSocket.Net.Server.CurrentServerIPs()[0].ToString(), 159,                   APSocket.Net.Server.CommunicationMode.Messaging);
+                  
+                  //OR
+                  
+                  //StreamFile Mode
+                  server.StartListeninig(APSocket.Net.Server.CurrentServerIPs()[0].ToString(), 159,                   APSocket.Net.Server.CommunicationMode.StreamFile);
+                  
+                  //OR
+                  
+                  //LengthFirst Mode
+                  server.StartListeninig(APSocket.Net.Server.CurrentServerIPs()[0].ToString(), 159,                   APSocket.Net.Server.CommunicationMode.LengthFirst);
 
 
         private void Server_ReciveIntterupt(System.Net.Sockets.Socket socket, string message)
