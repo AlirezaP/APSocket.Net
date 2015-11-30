@@ -3,6 +3,7 @@ APSocket.Net Is A Good Tool For Socket Progarming.</br>
 With APSocket.Net You Can Listen,Recive,Send,Manage Clients Very Easy.
 
 </br>
+Nuget Url: http://www.nuget.org/packages/APSocket/
 
 CommunicationMode:</br>
 1- Messaging: this mode is for messageing Communication. End of each message should be <EOF> OR <FOF>.</br>
